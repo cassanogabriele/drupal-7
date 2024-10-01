@@ -1,0 +1,6 @@
+name = Ajouter un milkshake
+description = Ajout de recette de milkshakes
+package = Drupal 7 Development
+version = 7.x-0.x-dev
+core = 7.x
+files[]=addmilkshake.module

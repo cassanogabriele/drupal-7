@@ -1,0 +1,188 @@
+<?php
+// $Id$
+
+/**
+ * @file
+ * Use this module to learn about Drupal's menu system,
+ * specifically how local tasks work.
+ */ 
+use \Drupal\Core\Database\Database;
+
+/**
+ * Implementation of hook_menu().
+ */
+function milkshake_menu() {
+  $items['milkshake'] = array(
+    'title' => 'Recettes de milkshakes',
+    'access arguments' => array('list flavors'),
+	'access callback' => TRUE,
+    'page callback' => 'milkshake_overview',
+    'type' => MENU_NORMAL_ITEM,
+  );
+  $items['milkshake/list'] = array(
+    'title' => 'Recettes',
+    'access arguments' => array('list flavors'),
+	'access callback' => TRUE,
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+    'weight' => 0,
+  );
+  $items['milkshake/best'] = array(
+    'title' => 'Meilleures recettes',
+    'access arguments' => array('Access Custom Page'),
+	'access callback' => TRUE,	
+    'page callback' => 'milkshake_best',
+    'type' => MENU_LOCAL_TASK,
+    'weight' => 1,
+  );
+  $items['milkshake/list/fruity'] = array(
+    'title' => 'Saveurs fruits',
+    'access arguments' => array('list flavors'),
+	'access callback' => TRUE,
+	'page callback' => 'milkshake_fruity',
+    'page arguments' => array(2), 
+    'type' => MENU_LOCAL_TASK,
+  );
+  $items['milkshake/list/candy'] = array(
+    'title' => 'Saveur sucre',
+    'access arguments' => array('list flavors'),
+	'access callback' => TRUE,
+ 	'page callback' => 'milkshake_candy',
+    'page arguments' => array(2), 
+    'type' => MENU_LOCAL_TASK,
+  );
+
+  return $items;
+}
+
+function milkshake_overview() {	
+	// Récupération de tous les milkshakes
+	$query = db_select('milshakes', 'm');
+	
+	$query
+	->condition('m.mid', 0, '<>')
+	->fields('m', array('flavor','link_recipe', 'type_milkshake', 'cote'))
+	->range(0, 50);
+
+	$result = $query->execute();
+	
+	$header = array('Saveur', 'Recette', 'Type de milkshake', 'Cote');
+	$data = array();
+	
+	$created = $record->created;
+				
+	foreach($result as $record){  
+		$data[] = array( 
+			$record->flavor,		
+			$record->link_recipe,
+			$record->type_milkshake,
+			$record->cote,			
+		);		
+			
+		$output = theme('table', array('header' => $header, 'rows' => $data));	
+
+		$output .= theme('pager'); 
+	}
+	
+	return $output;
+}
+
+function milkshake_best() {	
+	// Récupération des meilleurs milkshakes
+	$query = db_select('milshakes', 'm');
+	
+	$or = db_or()->condition('cote', '★★★★')->condition('cote', '★★★★★');
+	
+	$query
+	->condition('m.mid', 0, '<>')
+	->fields('m', array('flavor','link_recipe', 'type_milkshake', 'cote'))
+	->range(0, 50)
+	->condition($or);
+
+	$result = $query->execute();
+	
+	$header = array('Saveur', 'Recette', 'Type de milkshake', 'Cote');
+	$data = array();
+	
+	$created = $record->created;
+				
+	foreach($result as $record){  
+		$data[] = array( 
+			$record->flavor,		
+			$record->link_recipe,
+			$record->type_milkshake,
+			$record->cote,			
+		);		
+			
+		$output = theme('table', array('header' => $header, 'rows' => $data));	
+
+		$output .= theme('pager'); 
+	}
+	
+	return $output;
+}
+
+function milkshake_fruity(){		
+    $query = db_select('milshakes', 'm');
+	
+	$query
+	->condition('m.mid', 0, '<>')
+	->condition('m.mid', 0, '<>')
+	->condition('type_milkshake', 'fruité')
+	->fields('m', array('flavor', 'link_recipe', 'cote'))
+	->range(0, 50);
+		
+	$result = $query->execute();
+	
+	$header = array('Saveur', 'Recette', 'Cote');
+	
+	$data = array();
+	
+	$created = $record->created;
+				
+	foreach($result as $record){  
+		$data[] = array( 
+			$record->flavor,
+			$record->link_recipe,	
+			$record->cote,
+		);		
+			
+		$output = theme('table', array('header' => $header,'rows' => $data));	
+
+		$output .= theme('pager'); 
+	}
+	
+	return '<p style="font-family:Andale Mono, monospace;color:#6E6E6E;font-weight:bold;text-align:center;margin-top:25px;">'.$output.'</p>';
+}
+
+function milkshake_candy(){		
+    $query = db_select('milshakes', 'm');
+	
+	$query
+	->condition('m.mid', 0, '<>')
+	->condition('m.mid', 0, '<>')
+	->condition('type_milkshake', 'sucré')
+	->fields('m', array('flavor', 'link_recipe', 'cote'))
+	->range(0, 50);
+		
+	$result = $query->execute();
+	
+	$header = array('Saveur', 'Recette', 'Cote');
+	
+	$data = array();
+	
+	$created = $record->created;
+				
+	foreach($result as $record){  
+		$data[] = array( 
+			$record->flavor,
+			$record->link_recipe,
+			$record->cote,
+		);		
+			
+		$output = theme('table', array('header' => $header,'rows' => $data));	
+
+		$output .= theme('pager'); 
+	}
+	
+	return '<p style="font-family:Andale Mono, monospace;color:#6E6E6E;font-weight:bold;text-align:center;margin-top:25px;text-align:center !important;">'.$output.'</p>';
+}

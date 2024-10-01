@@ -1,0 +1,115 @@
+<?php
+use \Drupal\Core\Database\Database;
+
+/**
+* Implements hook_menu().
+*/
+function formexample_menu() {
+	$items['formexample'] = array(
+		'title' => 'Ajout de milkshakes',
+		'page callback' => 'drupal_get_form',
+		'page arguments' => array('formexample_nameform'),
+		'access callback' => TRUE,
+		'type' => MENU_NORMAL_ITEM
+	);
+	
+	return $items;
+}
+
+/**
+* Define a form.
+*/
+function formexample_nameform($form, &$form_state) {
+	$form['saveur'] = array(
+		'#type' => 'textfield', 
+		'#title' => 'Entrez une saveur',
+		'#size' => 40,
+		'#maxlength' => 60,
+		'#required' => TRUE, 
+	);
+	
+	$form['recette'] = array(
+		'#type' => 'textfield', 
+		'#title' => 'Entrez une lien vers la recette',
+		'#size' => 40,
+		'#maxlength' => 80,
+		'#required' => TRUE, 
+	);
+	
+	$form['type_options'] = array(
+		'#type' => 'value',
+		'#value' => array(t('sucré'), t('fruité'))
+	);
+		
+	$form['type']['favorite_type'] = array(
+		'#type' => 'select', 
+		'#title' => t('Choisissez le type de milkshake'), 		 
+		'#options' => $form['type_options']['#value'],		
+		'#required' => TRUE
+	); 
+	
+	$form['cote_options'] = array(
+		'#type' => 'value',
+		'#value' => array(t('★'), t('★★'), t('★★★'), t('★★★★'), t('★★★★★'))
+	);
+	
+	$form['cote']['favorite_cote'] = array(
+		'#type' => 'select', 
+		'#title' => t('Choisissez la cote'), 		
+		'#options' => $form['cote_options']['#value'],		
+		'#required' => TRUE
+	); 
+	
+	$form['button']['submit'] = array(
+		'#type' => 'submit',
+		'#value' => t('Soumettre')
+	);
+
+	$form['reset'] = array(
+      '#type' => 'button',
+      '#button_type' => 'reset',
+      '#value' => t('Effacer'),
+      '#weight' => 9,
+      '#validate' => array(),
+      '#attributes' => array(
+            'onclick' => 'this.form.reset(); return false;',
+          ),
+    );
+	
+	return $form;
+}
+
+/**
+* Validate the form.
+*/
+function formexample_nameform_validate(&$form, &$form_state) {
+	if ((is_numeric($form_state['values']['saveur']))) {       
+        form_set_error('saveur', t('Le champ saveur demandé doit être de type text.'));
+    }
+	
+	if(!preg_match('/(http|https):\/\//', $form_state['values']['recette']))
+	{
+		form_set_error('recette', t('Vous n\'avez pas entré un lien.'));
+	} 	
+}
+
+function formexample_nameform_submit(&$form, &$form_state) {
+	// Récupérer la valeur du type de milkshake, choisit par l'utilisateur 
+	$type_key = $form_state['values']['favorite_type'];
+	$type_value = $form_state['values']['type_options'][$type_key];	
+	
+	// Récupérer la valeur de la côte de milkshake, choisie par l'utilisateur
+	$cote_key = $form_state['values']['favorite_cote'];
+	$cote_value = $form_state['values']['cote_options'][$cote_key];	
+	
+	$nid = db_insert('milshakes')
+		->fields(array(
+		'flavor' => $form_state['values']['saveur'],
+		'link_recipe' => '<a href="'.$form_state['values']['recette'].'">recette</a>',
+		'type_milkshake' => $type_value,	 
+		'cote' => $cote_value,
+	))
+	->execute();
+
+	$form_state['redirect'] = '';	
+}

@@ -1,0 +1,74 @@
+<?php
+/**
+ *  Implements hook_help()
+ */
+function hello_world_help($path, $arg) {
+  if ($path == 'admin/help#list_users') {
+    return t('List of all users.');
+  }
+}
+
+
+/**
+ *  Implements hook_menu()
+ */
+function hello_world_menu() {
+  $items = array();
+	
+  $items['list-users'] = array(
+    'title' => t('Liste des utilisateurs'),
+    'description' => t('Une liste complète des utilisateurs du site.'),
+    'page callback' => '_hello_world_first_page',
+    'access callback' => TRUE,
+    'type' => MENU_NORMAL_ITEM,
+    'weight' => -10,
+  );  
+	
+  return $items;
+}
+
+/**
+ *  Implements the function _hello_world_first_page()
+ */ 
+function _hello_world_first_page($results) {
+	// Récupérer les utilisateurs
+	$query = db_select('users', 'u');
+
+	$query
+	->condition('u.uid', 0, '<>')
+	->fields('u', array('uid', 'name', 'status', 'created', 'mail'))
+	->range(0, 50);
+
+	$result = $query->execute();
+	
+	$header = array('N°', 'Identifiant', 'Email', "Date d'inscription");
+	$data = array();
+	
+	$created = $record->created;
+				
+	foreach($result as $record){  
+		$data[] = array(
+			$record->uid,
+            $record->name,
+			$record->mail,
+			date("Y-m-d", $record->created)			
+		);		
+			
+		$output = theme('table', array('header' => $header, 'rows' => $data));	
+
+		$output .= theme('pager'); 
+	}	
+	
+	return '<p><h4 style="font-family: Andale Mono, monospace;color: #FF0000;font-style:italic;font-weight:bold;text-align:center;font-size:18px;">'.t('Voici la liste des utilisateurs actifs du site').'</h4></p><p style="font-family:Andale Mono, monospace;color:#6E6E6E;font-weight:bold;text-align:center;">'.$output.' </p>';
+}
+
+/**
+ * Implementation of hook_help()
+ */
+function hello_help($path, $arg) {	
+	switch ($path) {
+      case 'admin/help#hello':
+      return '<p>' . t('Sample module from Atelier Drupal book. This module just provide a hello world block.') . '</p>';
+	}
+}
+

@@ -1,0 +1,7 @@
+name = List Users
+description = All users from the website.
+package = Drupal 7 Development
+version = 7.x-0.x-dev
+core = 7.x
+files[] = list_users.module
+stylesheets[all][] = main.css
